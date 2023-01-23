@@ -1,18 +1,19 @@
-import './globals.css'
+import "./globals.css";
+import { Providers } from "./providers";
 
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode
-}) {
+}: React.PropsWithChildren<unknown>) {
   return (
     <html lang="en">
-      {/*
-        <head /> will contain the components returned by the nearest parent
-        head.tsx. Find out more at https://beta.nextjs.org/docs/api-reference/file-conventions/head
-      */}
       <head />
-      <body>{children}</body>
+      <body>
+        <Providers>
+          <main className="min-h-screen w-full p-4 bg-[#141414] text-white">
+            {children}
+          </main>
+        </Providers>
+      </body>
     </html>
-  )
+  );
 }
