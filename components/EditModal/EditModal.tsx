@@ -215,6 +215,7 @@ const EditModal = ({ handleEditModalClose, isOpen, id }: Props) => {
                 <input
                   type="file"
                   id="fileUpload"
+                  accept="image/*"
                   className="hidden"
                   {...register("image")}
                 />

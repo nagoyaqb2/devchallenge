@@ -186,6 +186,7 @@ const AddModal = ({ handleAddModalClose, isOpen }: Props) => {
                 <input
                   type="file"
                   id="fileUpload"
+                  accept="image/*"
                   className="hidden"
                   {...register("image")}
                 />
