@@ -2,10 +2,22 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+
+import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 
-import { useForm, useFormState, SubmitHandler } from "react-hook-form";
+import { motion } from "framer-motion";
+
+import {
+  useForm,
+  useFormState,
+  SubmitHandler,
+  useWatch,
+} from "react-hook-form";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+
 import { glysa } from "../../app/layout";
 import { toast } from "react-hot-toast";
 
@@ -30,10 +42,16 @@ type FormValue = {
 };
 
 const AddModal = ({ handleAddModalClose, isOpen }: Props) => {
-  const queryClient = useQueryClient();
+  const router = useRouter();
 
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+
+  const schema = yup.object().shape({
+    email: yup.string().email().required("Email is required"),
+    phone: yup.string().required("Phone number is required"),
+    name: yup.string().required("Name is required"),
+  });
 
   // Form functions and initial values
   const {
@@ -44,15 +62,8 @@ const AddModal = ({ handleAddModalClose, isOpen }: Props) => {
     control,
     getValues,
     formState,
-    formState: { isSubmitSuccessful },
-  } = useForm<FormValue>({
-    defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      image: undefined,
-    },
-  });
+    formState: { isSubmitSuccessful, errors },
+  } = useForm<FormValue>({ resolver: yupResolver(schema) });
 
   // Get dirty fields
   const { dirtyFields } = useFormState({ control });
@@ -69,7 +80,6 @@ const AddModal = ({ handleAddModalClose, isOpen }: Props) => {
     (contact: Contact) => createContactFn(contact),
     {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["contacts"] });
         toast.success("Successfully created!");
       },
       onError: () => {
@@ -87,6 +97,8 @@ const AddModal = ({ handleAddModalClose, isOpen }: Props) => {
     const formData = { name, email, phone, imageUrl };
 
     createContact(formData);
+
+    router.push("/");
   };
 
   // Upload image to cloudinary
@@ -96,6 +108,11 @@ const AddModal = ({ handleAddModalClose, isOpen }: Props) => {
     cloudinaryData.append("upload_preset", "bbnq9aud");
     cloudinaryData.append("file", image[0]);
 
+    // Return default image if no image is selected
+    if (!image[0])
+      return "https://res.cloudinary.com/df4tacw8n/image/upload/v1674861458/Default_gvmikh.jpg";
+
+    // Upload image to cloudinary if image is selected
     const res = await axios.post(
       "https://api.cloudinary.com/v1_1/df4tacw8n/image/upload",
       cloudinaryData
@@ -116,10 +133,12 @@ const AddModal = ({ handleAddModalClose, isOpen }: Props) => {
     }
   }, [formState, handleAddModalClose, reset]);
 
-  /*   // TODO: Watch for image change
+  // Watch image input
+  const imageWatch = useWatch({ control, name: "image" });
+
+  // Set preview image
   useEffect(() => {
-    const subscription = watch((value, { name, type }) => {
-      // Set preview image
+    if (imageWatch) {
       if (getValues("image")) {
         const file = getValues("image")[0];
         setFile(file);
@@ -128,22 +147,14 @@ const AddModal = ({ handleAddModalClose, isOpen }: Props) => {
         setFile(null);
         setPreview(null);
       }
-    });
-    return () => subscription.unsubscribe();
-  }, [watch, getValues]); */
-
-  // Picture preview
-  /*   if (watch("image") && watch("image").length > 0) {
-    const file = getValues("image")[0];
-    setFile(file);
-    setPreview(URL.createObjectURL(file));
-  } */
+    }
+  }, [imageWatch, getValues]);
 
   return (
     <div
       className={
         isOpen
-          ? "fixed top-0 left-0 w-full h-full overflow-x-hidden overflow-y-auto bg-[rgba(0,0,0,0.4)] outline-none"
+          ? "fixed top-0 left-0 w-full h-full overflow-x-hidden overflow-y-hidden bg-[rgba(0,0,0,0.4)] outline-none"
           : "hidden"
       }
     >
@@ -178,7 +189,10 @@ const AddModal = ({ handleAddModalClose, isOpen }: Props) => {
                   className="hidden"
                   {...register("image")}
                 />
-                <label
+                <motion.label
+                  initial={{ opacity: 0.6 }}
+                  whileTap={{ scale: 0.9 }}
+                  whileInView={{ opacity: 1 }}
                   htmlFor="fileUpload"
                   className="py-2 pl-3 pr-4 mr-2 text-sm rounded-lg cursor-pointer bg-[#282828] hover:bg-[#2D2D2D] active:bg-[#323232]"
                 >
@@ -219,14 +233,20 @@ const AddModal = ({ handleAddModalClose, isOpen }: Props) => {
                       </>
                     )}
                   </div>
-                </label>
-                <div
+                </motion.label>
+                <motion.div
+                  initial={{ opacity: 0.6 }}
+                  whileTap={{ scale: 0.9 }}
+                  whileInView={{ opacity: 1 }}
                   className={
                     preview
                       ? "p-2 cursor-pointer rounded-lg bg-[#282828] hover:bg-[#2D2D2D] active:bg-[#323232]"
                       : "hidden"
                   }
-                  onClick={() => reset({ image: undefined })}
+                  onClick={() => {
+                    reset({ image: undefined });
+                    setPreview(null);
+                  }}
                 >
                   <svg
                     width="24"
@@ -240,7 +260,7 @@ const AddModal = ({ handleAddModalClose, isOpen }: Props) => {
                       fill="white"
                     />
                   </svg>
-                </div>
+                </motion.div>
               </div>
               <div className="flex flex-col w-full gap-1 mb-6">
                 <label className="w-full text-xs tracking-[1%] text-[rgba(255,255,255,0.56)]">
@@ -256,6 +276,7 @@ const AddModal = ({ handleAddModalClose, isOpen }: Props) => {
                   placeholder="Jamie Wright"
                   {...register("name", { required: true })}
                 />
+                <p className="text-xs text-red-500">{errors.name?.message}</p>
               </div>
               <div className="flex flex-col w-full gap-1 mb-6">
                 <label className="w-full text-xs tracking-[1%] text-[rgba(255,255,255,0.56)]">
@@ -271,6 +292,7 @@ const AddModal = ({ handleAddModalClose, isOpen }: Props) => {
                   placeholder="+01 234 5678"
                   {...register("phone", { required: true })}
                 />
+                <p className="text-xs text-red-500">{errors.phone?.message}</p>
               </div>
               <div className="flex flex-col w-full gap-1 mb-6">
                 <label className="w-full text-xs tracking-[1%] text-[rgba(255,255,255,0.56)]">
@@ -286,9 +308,13 @@ const AddModal = ({ handleAddModalClose, isOpen }: Props) => {
                   placeholder="jamie.wright@mail.com"
                   {...register("email", { required: true })}
                 />
+                <p className="text-xs text-red-500">{errors.email?.message}</p>
               </div>
               <div className="flex flex-row items-start justify-end gap-2 pt-6">
-                <button
+                <motion.button
+                  initial={{ opacity: 0.6 }}
+                  whileTap={{ scale: 0.9 }}
+                  whileInView={{ opacity: 1 }}
                   type="button"
                   className="px-4 py-2 text-sm rounded-lg"
                   onClick={() => {
@@ -304,8 +330,11 @@ const AddModal = ({ handleAddModalClose, isOpen }: Props) => {
                   }}
                 >
                   Cancel
-                </button>
-                <input
+                </motion.button>
+                <motion.input
+                  initial={{ opacity: 0.6 }}
+                  whileTap={{ scale: 0.9 }}
+                  whileInView={{ opacity: 1 }}
                   type="submit"
                   value="Done"
                   disabled={isLoading}

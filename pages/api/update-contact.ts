@@ -8,19 +8,33 @@ export default async function handler(
 ) {
   const { id, name, email, phone, imageUrl } = req.body;
   try {
-    const contact = await prisma.contact.update({
-      where: {
-        id,
-      },
-      data: {
-        name,
-        email,
-        phone,
-        imageUrl,
-      },
-    });
-    res.status(200).json(contact);
-  } catch (e) {
-    res.status(400).json({ message: "Contact does not exist" });
+    if (imageUrl === null) {
+      const contact = await prisma.contact.update({
+        where: {
+          id,
+        },
+        data: {
+          name,
+          email,
+          phone,
+        },
+      });
+      return res.status(200).json(contact);
+    } else {
+      const contact = await prisma.contact.update({
+        where: {
+          id,
+        },
+        data: {
+          name,
+          email,
+          phone,
+          imageUrl,
+        },
+      });
+      res.status(200).json(contact);
+    }
+  } catch (e: any) {
+    res.status(400).json({ message: e.message });
   }
 }
