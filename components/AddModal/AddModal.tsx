@@ -97,8 +97,6 @@ const AddModal = ({ handleAddModalClose, isOpen }: Props) => {
     const formData = { name, email, phone, imageUrl };
 
     createContact(formData);
-
-    router.push("/");
   };
 
   // Upload image to cloudinary

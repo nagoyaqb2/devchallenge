@@ -26,13 +26,11 @@ const Home = () => {
   };
 
   // Fetch contacts query
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["contacts"],
     queryFn: fetchContacts,
+    refetchInterval: 1000,
   });
-
-  // Error handling
-  if (error) return <div>Something went wrong</div>;
 
   return (
     <>

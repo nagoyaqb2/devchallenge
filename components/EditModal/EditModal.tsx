@@ -125,8 +125,6 @@ const EditModal = ({ handleEditModalClose, isOpen, id }: Props) => {
     const formData = { id, name, email, phone, imageUrl };
 
     updateContact(formData);
-
-    router.replace("/");
   };
 
   // Upload image to cloudinary
