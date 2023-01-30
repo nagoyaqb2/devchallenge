@@ -138,7 +138,7 @@ const ListItem: React.FC<IContact> = ({ contact }) => {
               return (
                 <div className="absolute z-50 flex flex-col bg-[#1E1E1E] ml-[-187px] md:ml-[-8px] mt-4 min-w-[219px] rounded-lg overflow-clip">
                   <div
-                    className="flex flex-row items-center px-[10px] py-3 bg-transparent hover:bg-[#232323]"
+                    className="flex flex-row items-center px-[10px] py-3 bg-transparent hover:bg-[#232323] active:bg-[#282828]"
                     onClick={() => {
                       setEditModalOpen(true);
                       setShowOptions(undefined);
@@ -161,7 +161,7 @@ const ListItem: React.FC<IContact> = ({ contact }) => {
                     Edit
                   </div>
                   <div
-                    className="flex flex-row items-center px-[10px] py-3 bg-transparent hover:bg-[#232323]"
+                    className="flex flex-row items-center px-[10px] py-3 bg-transparent hover:bg-[#232323] active:bg-[#282828]"
                     onClick={() => {
                       setShowOptions(undefined);
                     }}
@@ -183,7 +183,7 @@ const ListItem: React.FC<IContact> = ({ contact }) => {
                     Favourite
                   </div>
                   <div
-                    className="flex flex-row items-center px-[10px] py-3 bg-transparent hover:bg-[#232323]"
+                    className="flex flex-row items-center px-[10px] py-3 bg-transparent hover:bg-[#232323] active:bg-[#282828]"
                     onClick={() => {
                       deleteContact(contact.id);
                       setShowOptions(undefined);
