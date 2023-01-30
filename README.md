@@ -1,4 +1,4 @@
-UX Studio Dev Challenge Contact App
+# UX Studio Design Challenge Contact App
 
 To run the app, first, clone the repository:
 
